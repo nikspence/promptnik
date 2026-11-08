@@ -119,6 +119,8 @@ Environment discovery retains ChaTTY's providers and variable aliases: OpenAI, A
 
 Saved API keys use `keyring` and the OS credential store. The editor offers explicit plaintext storage if needed. History contains a connection name and settings snapshot, not an API key. If a saved connection's URL changes, old sessions do not silently receive its key. Endpoint redirects are rejected so credentials are not automatically forwarded to a different address.
 
+Environment-discovered URLs using the wildcard listen address `0.0.0.0` connect through `127.0.0.1`, preserving their scheme, port, and path. This applies to `OLLAMA_HOST` and all supported provider URL variables; the environment itself is unchanged.
+
 Default local data directories:
 
 - Windows: `%LOCALAPPDATA%\Promptnik`

@@ -1,5 +1,6 @@
 import io
 import json
+import os
 from pathlib import Path
 import tempfile
 import threading
@@ -102,6 +103,23 @@ class Contracts(unittest.TestCase):
         self.assertEqual(core.endpoint({'url':'http://localhost:11434','protocol':'chat'},'decision'),'http://localhost:11434/v1/systemone')
         with self.assertRaises(ValueError): core.base_url('https://secret@example.com')
         with self.assertRaises(ValueError): core.validate_connections({'connections':{'bad':{'url':'https://test','context_limit':'bad'}}})
+
+    def test_environment_wildcard_addresses(self):
+        cases = [
+            ('OLLAMA_HOST','0.0.0.0:11434','env:Ollama','127.0.0.1:11434'),
+            ('OLLAMA_BASE_URL','http://0.0.0.0:11434/v1','env:Ollama','http://127.0.0.1:11434/v1'),
+            ('LITELLM_URL','https://0.0.0.0:4000/proxy/v1','env:LiteLLM','https://127.0.0.1:4000/proxy/v1'),
+            ('BEDROCK_MANTLE_URL','http://0.0.0.0:8080/v1','env:Bedrock Mantle','http://127.0.0.1:8080/v1'),
+            ('OPENAI_BASE_URL','http://example.com/0.0.0.0','env:OpenAI','http://example.com/0.0.0.0'),
+            ('OLLAMA_HOST','192.168.1.2:11434','env:Ollama','192.168.1.2:11434'),
+        ]
+        for variable,value,name,expected in cases:
+            with self.subTest(variable=variable,value=value), patch.dict('os.environ',{variable:value},clear=True):
+                connection=core.environment_connections()[name]
+                self.assertEqual(connection['url'],expected)
+                if value=='0.0.0.0:11434':
+                    self.assertEqual(core.endpoint(connection),'http://127.0.0.1:11434/api/chat')
+                self.assertEqual(os.environ[variable],value)
 
     def test_discovery_and_environment(self):
         with patch.dict('os.environ',{'AWS_BEARER_TOKEN_BEDROCK':'key','AWS_REGION':'us-east-1','OLLAMA_HOST':'localhost:11434'},clear=True):

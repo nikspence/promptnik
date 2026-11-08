@@ -23,6 +23,19 @@ PROVIDERS = [
 ]
 PROTOCOLS = ('responses', 'chat', 'messages')
 
+def environment_url(url):
+    """Turn an IPv4 wildcard bind address into a usable client address."""
+    value = url.strip()
+    scheme = '://' in value
+    try:
+        parsed = urllib.parse.urlsplit(value if scheme else 'http://' + value)
+    except ValueError:
+        return url  # Leave invalid settings for the existing connection validation.
+    if parsed.hostname != '0.0.0.0' or parsed.username is not None or parsed.password is not None:
+        return url
+    normalized = parsed._replace(netloc='127.0.0.1' + parsed.netloc[len('0.0.0.0'):]).geturl()
+    return normalized if scheme else normalized.removeprefix('http://')
+
 def environment_connections():
     first = lambda names: next((os.environ[n] for n in names if os.environ.get(n)), '')
     found = {}
@@ -35,6 +48,8 @@ def environment_connections():
     region = first(('AWS_REGION', 'AWS_DEFAULT_REGION'))
     if key or url:
         found['env:Bedrock Mantle'] = dict(url=url or (f'https://bedrock-mantle.{region}.api.aws/v1' if region else ''), api_key=key, model=os.getenv('BEDROCK_MODEL', ''), protocol='responses')
+    for connection in found.values():
+        connection['url'] = environment_url(connection['url'])
     return found
 
 def base_url(url):
