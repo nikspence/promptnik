@@ -163,6 +163,38 @@ class Desktop(unittest.TestCase):
             finally:
                 w.close(); self.app.processEvents(); store.db.close()
 
+    def test_full_decision_prompt_survives_restart(self):
+        from promptnik.storage import Store
+        from promptnik.ui import Window
+        with tempfile.TemporaryDirectory() as root, patch('promptnik.core.discover',return_value={}), patch('promptnik.core.environment_connections',return_value={}), patch('promptnik.core.models',return_value=[]), patch('promptnik.ui.confirm',return_value=True):
+            store=Store(root); w=Window(store)
+            w.connections={'local':{'url':'http://localhost:11434/v1','model':'test'}}
+            try:
+                w.new_session('decision','local'); tab=w.tabs.currentWidget()
+                image=store.attach(data=b'image')
+                form={'state':'{"vehicle":"truck"}','json_state':True,'images':[image],'questions':[
+                    {'name':'present','instructions':'Is a vehicle present?','type':'noul','choices':[]},
+                    {'name':'category','instructions':'Choose the category','type':'choice','choices':[['truck','Cargo vehicle'],['car','Passenger vehicle']]},
+                    {'name':'condition','instructions':'Rate the condition','type':'score','choices':[['','Damaged'],['','Fair'],['','Excellent']]},
+                ]}
+                tab.restore(form); tab.star_current.click()
+                self.assertEqual(store.list_prompts('decision')[0]['payload'],form)
+            finally:
+                w.close(); self.app.processEvents(); store.db.close()
+            store=Store(root); w=Window(store)
+            try:
+                w.connections={'local':{'url':'http://localhost:11434/v1','model':'test'}}
+                w.new_session('decision','local'); self.app.processEvents()
+                w.prompts_list.setCurrentRow(0)
+                preview=w.prompt_preview.toPlainText()
+                for text in ('truck','Is a vehicle present?','Yes / No','Cargo vehicle','Scoring levels (lowest first):','Damaged','Excellent',image): self.assertIn(text,preview)
+                self.assertIn('3 question(s)',w.prompts_list.item(0).text())
+                w.copy_selected_prompt()
+                self.assertEqual(w.tabs.currentWidget().form_value(),form)
+                self.assertEqual(store.list_prompts('decision')[0]['payload'],form)
+            finally:
+                w.close(); self.app.processEvents(); store.db.close()
+
     def test_prompts_panel_saves_filters_and_copies_both_types(self):
         from promptnik.storage import Store
         from promptnik.ui import Window, MessageBubble

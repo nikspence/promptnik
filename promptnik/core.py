@@ -63,6 +63,18 @@ def base_url(url):
     if not urllib.parse.urlsplit(url).path: url += '/v1'
     return url
 
+def merge_discovered_connections(environment, local):
+    """Prefer configured environment entries over matching loopback probes."""
+    def address(connection):
+        try:
+            parsed = urllib.parse.urlsplit(base_url(connection['url']))
+            host = parsed.hostname.lower()
+            if host in ('localhost', '127.0.0.1', '::1', '0.0.0.0'): host = 'loopback'
+            return host, parsed.port or (443 if parsed.scheme == 'https' else 80)
+        except (ValueError, KeyError): return None
+    configured = {address(c) for c in environment.values()} - {None}
+    return {**environment, **{name:c for name,c in local.items() if address(c) not in configured}}
+
 def endpoint(c, mode='chat'):
     if mode == 'chat' and native_ollama(c): return base_url(c['url']).removesuffix('/v1')+'/api/chat'
     return base_url(c['url']) + ('/systemone' if mode == 'decision' else {'chat':'/chat/completions', 'responses':'/responses', 'messages':'/messages'}[c.get('protocol', 'chat')])

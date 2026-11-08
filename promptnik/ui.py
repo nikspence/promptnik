@@ -661,6 +661,8 @@ class Window(QMainWindow):
         self.prompts_panel = QWidget(); prompts = QVBoxLayout(self.prompts_panel); prompts.addWidget(QLabel('<b>Prompts</b>'))
         self.prompts_search = QLineEdit(); self.prompts_search.setPlaceholderText('Search prompts'); self.prompts_search.textChanged.connect(self.refresh_prompts); prompts.addWidget(self.prompts_search)
         self.prompts_list = QListWidget(); self.prompts_list.setTextElideMode(Qt.TextElideMode.ElideRight); self.prompts_list.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff); self.prompts_list.itemDoubleClicked.connect(lambda _:self.copy_selected_prompt()); prompts.addWidget(self.prompts_list,1)
+        self.prompt_preview = QPlainTextEdit(); self.prompt_preview.setReadOnly(True); self.prompt_preview.setAccessibleName('Saved prompt details'); self.prompt_preview.setPlaceholderText('Select a prompt to see its full contents'); self.prompt_preview.setMaximumHeight(260); prompts.addWidget(self.prompt_preview)
+        self.prompts_list.currentItemChanged.connect(self.preview_selected_prompt)
         prompt_buttons = QHBoxLayout(); prompts.addLayout(prompt_buttons)
         button('Copy to tab',self.copy_selected_prompt,prompt_buttons); button('Remove',self.remove_selected_prompt,prompt_buttons)
         self.split.addWidget(self.prompts_panel); self.split.setSizes([250,820,250])
@@ -717,7 +719,7 @@ class Window(QMainWindow):
         icon = QIcon(str(assets/'promptnik-icon.svg'))
         self.setWindowIcon(icon); QApplication.setWindowIcon(icon)
     def reload_connections(self):
-        self.connections = {**core.environment_connections(),**self.local,**self.store.connections()}
+        self.connections = {**core.merge_discovered_connections(core.environment_connections(),self.local),**self.store.connections()}
         for i in range(self.tabs.count()):
             widget = self.tabs.widget(i)
             if isinstance(widget,SessionTab): widget.refresh_connections()
@@ -735,10 +737,11 @@ class Window(QMainWindow):
         needle = self.prompts_search.text().casefold()
         for prompt in self.store.list_prompts(tab.session['mode']):
             payload = prompt['payload']; text = payload.get('text',payload.get('state',''))
-            questions = ' '.join(q.get('instructions','')+' '+' '.join(' '.join(choice) for choice in q.get('choices',[])) for q in payload.get('questions',[]))
+            questions = ' '.join(q.get('name','')+' '+q.get('instructions','')+' '+' '.join(' '.join(choice) for choice in q.get('choices',[])) for q in payload.get('questions',[]))
             if needle not in (text+' '+questions).casefold(): continue
             title = ' '.join(text.split()) or ' '.join(questions.split()) or 'Image prompt'
-            count = len(payload.get('images',[])); item = QListWidgetItem(title[:100]+(f'  ·  {count} image(s)' if count else ''))
+            count = len(payload.get('images',[])); question_count = len(payload.get('questions',[]))
+            item = QListWidgetItem(title[:100]+(f'  ·  {question_count} question(s)' if prompt['mode']=='decision' else '')+(f'  ·  {count} image(s)' if count else ''))
             item.setToolTip(text or questions); item.setData(Qt.ItemDataRole.UserRole,prompt['id']); self.prompts_list.addItem(item)
             if prompt['id'] == selected: self.prompts_list.setCurrentItem(item)
     def toggle_prompt(self,mode,payload):
@@ -758,6 +761,22 @@ class Window(QMainWindow):
     def copy_selected_prompt(self):
         prompt = self.selected_prompt()
         if prompt: self.tabs.currentWidget().copy_prompt(prompt['payload'])
+    def preview_selected_prompt(self,*_):
+        prompt = self.selected_prompt()
+        if not prompt:
+            self.prompt_preview.clear(); return
+        payload = prompt['payload']
+        if prompt['mode'] == 'chat': lines = [payload.get('text','')]
+        else:
+            lines = ['State / context:',payload.get('state',''),'','Interpret state as JSON: '+('Yes' if payload.get('json_state') else 'No')]
+            for i,q in enumerate(payload.get('questions',[]),1):
+                kind = q.get('type','noul')
+                lines.extend(['',f"Question {i}: {q.get('name','')}",{'noul':'Yes / No','choice':'Multiple choice','score':'Ordered score'}.get(kind,kind),q.get('instructions','')])
+                if kind == 'noul': lines.append('Answers: Yes / No')
+                elif kind == 'score': lines.extend(['Scoring levels (lowest first):',*[f'{j}. {pair[1]}' for j,pair in enumerate(q.get('choices',[]),1)]])
+                else: lines.extend(['Answer choices:',*[f'{label}: {description}' for label,description in q.get('choices',[])]])
+        if payload.get('images'): lines.extend(['','Images:',*payload['images']])
+        self.prompt_preview.setPlainText('\n'.join(lines))
     def remove_selected_prompt(self):
         prompt = self.selected_prompt()
         if prompt and confirm(self,'Remove this saved prompt?'):

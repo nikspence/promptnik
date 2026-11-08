@@ -90,6 +90,8 @@ Use **☆ Save prompt** beside the composer or decision form to save the current
 
 Saved chat prompts include text and images. Saved decision prompts include the state, JSON mode, images, and ordered questions and criteria. They persist across restarts independently of conversation history; clearing history does not remove them. Images remain stored while any saved prompt or session references them. Click a filled star or use **Remove** in the panel to remove a saved prompt. The panel's visibility is remembered.
 
+Select a saved decision prompt in the Prompts panel to inspect its full state, JSON setting, images, ordered questions, answer choices, and scoring levels. **Copy to tab** restores that complete definition; saved prompts do not include model-generated results.
+
 ## History and statistics
 
 The collapsible sidebar contains persistent chat and decision sessions. It supports search, rename, delete, and **Clear all** with confirmation. Closing a tab keeps its history. Deleting history closes the affected tabs and removes images that are no longer referenced by another saved session. Saved connections remain available. **Ctrl+B** toggles history; **Ctrl+N** opens a new chat.

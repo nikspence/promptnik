@@ -131,6 +131,18 @@ class Contracts(unittest.TestCase):
             found=core.discover()
             self.assertEqual(len(found),1); self.assertIn('authentication required',next(iter(found)))
 
+    def test_discovery_merges_environment_loopback_ports(self):
+        env={'env:Ollama':{'url':'http://localhost:11434/v1','api_key':'test','model':'chosen'}}
+        local={'local:Ollama':{'url':'http://127.0.0.1:11434/v1','model':'other'},'local:Other':{'url':'http://127.0.0.1:4000/v1'}}
+        merged=core.merge_discovered_connections(env,local)
+        self.assertEqual(set(merged),{'env:Ollama','local:Other'})
+        self.assertEqual(merged['env:Ollama'],env['env:Ollama'])
+        for host in ('[::1]','0.0.0.0'):
+            local['local:Ollama']['url']=f'http://{host}:11434/v1'
+            self.assertNotIn('local:Ollama',core.merge_discovered_connections(env,local))
+        env['env:Ollama']['url']='http://192.168.1.2:11434/v1'
+        self.assertIn('local:Ollama',core.merge_discovered_connections(env,local))
+
 class History(unittest.TestCase):
     def test_saved_prompts_keep_shared_images_until_unreferenced(self):
         with tempfile.TemporaryDirectory() as root:
