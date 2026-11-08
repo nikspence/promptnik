@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "promptnik"
+version = "0.1.0"
+description = "Cross-platform LLM chat and System One decision desktop client"
+readme = "README.md"
+license = {file = "LICENSE"}
+requires-python = ">=3.11"
+dependencies = ["PySide6>=6.8,<7", "keyring>=25,<26"]
+
+[project.gui-scripts]
+promptnik = "promptnik.ui:main"
+
+[tool.setuptools.packages.find]
+include = ["promptnik*"]
+
+[tool.setuptools.package-data]
+promptnik = ["assets/*.svg", "assets/*.png", "assets/*.ico"]

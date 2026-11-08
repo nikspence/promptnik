@@ -1,0 +1,33 @@
+# Python environments and caches
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Builds and generated test output
+build/
+dist/
+*.egg-info/
+*.spec
+test-output/
+
+# Local configuration, history, and secrets
+.promptnik/
+.env
+.env.*
+!.env.example
+
+# Editor and operating system files
+.vscode/
+.idea/
+*.swp
+*.swo
+*.un~
+*~
+.DS_Store
+Thumbs.db
