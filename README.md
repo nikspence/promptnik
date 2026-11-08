@@ -1,6 +1,19 @@
 # Promptnik
 
+![Promptnik logo](promptnik/assets/promptnik-light.svg#gh-light-mode-only)
+![Promptnik logo](promptnik/assets/promptnik-dark.svg#gh-dark-mode-only)
+
 A Python/Qt desktop client for LLM conversations and Ollama System One decisions. The initial desktop targets are Windows, macOS, and Linux.
+
+## Screenshots
+
+Chat conversations, model selection, and response statistics:
+
+![Promptnik chat conversation](assets/Screenshot-chat.png)
+
+System One decision queries with images and probability charts:
+
+![Promptnik decision query and probability results](assets/Screenshot-decision.png)
 
 ## Install and launch
 
@@ -51,7 +64,7 @@ Chat uses rounded message cards: your prompts sit to the right and assistant rep
 
 The composer starts at a compact height. Drag the divider above it to resize it; Promptnik remembers the chosen height. **A− / A+**, beside the **Theme** dropdown, decrease or increase the application's font size from 8 to 32 points. Font changes apply immediately to existing conversations, editors, and controls, and are remembered between launches. Hover over either font button to see the current size.
 
-The toolbar, welcome screen, and window icon use Promptnik branding. Light/dark logo variants switch with the theme selection, including system color-scheme changes. Assets live in `promptnik/assets/`: true SVG paths plus transparent PNG fallbacks and a Windows ICO. They are traced from the supplied `promptnik-light.png` and `promptnik-dark.png`; the source images are preserved. The optional `tools/trace_branding.py` asset-build tool uses Pillow and NumPy, neither of which is required to run Promptnik.
+The toolbar, welcome screen, and window icon use Promptnik branding. Light/dark logo variants switch with the theme selection, including system color-scheme changes. Packaged assets live in `promptnik/assets/`: true SVG paths plus transparent PNG fallbacks and a Windows ICO. They are traced from the source images `assets/promptnik-light.png` and `assets/promptnik-dark.png`. The optional `tools/trace_branding.py` asset-build tool uses Pillow and NumPy, neither of which is required to run Promptnik.
 
 Select several images with **Attach images**, drop files onto the attachment area or composer, or paste an image into the composer. The attachment tray previews images in request order. Double-click a thumbnail to open its stored copy. PNG, JPEG, WebP, and GIF are accepted by the app; actual model/provider format support varies. **Ctrl+Enter** sends the prompt. The draft and attachments remain available if the request fails or is cancelled.
 

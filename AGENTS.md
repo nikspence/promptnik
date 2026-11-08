@@ -7,7 +7,7 @@ Promptnik is a cross-platform Python desktop client for chat and Ollama System O
 - `promptnik/core.py`: endpoint discovery, request formats, streaming, and decision validation.
 - `promptnik/storage.py`: local SQLite session history, attachments, connection settings, and credential-store integration.
 - `promptnik/ui.py`: PySide6 interface, background jobs, chat, and decision forms.
-- `promptnik/assets/`: packaged logo and icon variants. The original logo PNGs are at the project root; `tools/trace_branding.py` rebuilds vector and raster assets.
+- `assets/`: original logo PNGs and README screenshots. `promptnik/assets/` contains packaged logo and icon variants; `tools/trace_branding.py` rebuilds those assets.
 - `tests/`: standard-library unit tests and offscreen Qt integration tests. `tools/live_smoke.py` performs optional real endpoint checks.
 
 ## Development

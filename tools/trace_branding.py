@@ -79,7 +79,7 @@ def render(svg, png, width=None, height=None):
     if not image.save(str(png)): raise RuntimeError('Cannot write '+str(png))
 
 def trace(variant):
-    original = Image.open(ROOT/f'promptnik-{variant}.png').convert('RGB')
+    original = Image.open(ROOT/'assets'/f'promptnik-{variant}.png').convert('RGB')
     rgb = np.asarray(original); fg = foreground(rgb,variant=='dark')
     ys,xs = np.nonzero(fg)
     left,top,right,bottom = max(0,int(xs.min())-12),max(0,int(ys.min())-12),min(original.width,int(xs.max())+13),min(original.height,int(ys.max())+13)
