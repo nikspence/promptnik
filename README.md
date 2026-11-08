@@ -84,6 +84,8 @@ Every completed run is preserved with its submitted form and raw response. **Res
 
 ## Prompts
 
+Click the **✎** icon on a previous chat prompt to copy its text and images into the composer for editing and resending. This does not save a favorite or change earlier messages; sending adds a new turn to the current conversation. Replacing a different, nonempty draft asks for confirmation.
+
 Use **☆ Save prompt** beside the composer or decision form to save the current draft. Star a past chat message or decision run to save its submitted prompt. The collapsible **Prompts** panel lists saved prompts for the active tab's type; search covers chat text or decision state, questions, and choice descriptions. Select a prompt and choose **Copy to tab**, or double-click it, to restore it to the active tab. If that tab already has a different draft, Promptnik asks before replacing it. Copying does not send a request or change the tab's connection or model.
 
 Saved chat prompts include text and images. Saved decision prompts include the state, JSON mode, images, and ordered questions and criteria. They persist across restarts independently of conversation history; clearing history does not remove them. Images remain stored while any saved prompt or session references them. Click a filled star or use **Remove** in the panel to remove a saved prompt. The panel's visibility is remembered.

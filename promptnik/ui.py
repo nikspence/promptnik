@@ -585,6 +585,9 @@ class SessionTab(QWidget):
         line.setContentsMargins(64 if message['role']=='user' else 4,0,4 if message['role']=='user' else 64,0)
         bubble = MessageBubble(message,live); line.addWidget(bubble); self.results.addWidget(row)
         if message['role'] == 'user':
+            edit = QPushButton('✎'); edit.setAccessibleName('Edit and resend prompt'); edit.setToolTip('Edit this prompt and its images in the composer, then send again')
+            bubble.header.addWidget(edit)
+            edit.clicked.connect(lambda checked=False,m=message:self.copy_prompt(m))
             saved = bool(self.store.prompt_id('chat',message))
             star = QPushButton('★' if saved else '☆'); star.setAccessibleName('Remove saved prompt' if saved else 'Save prompt'); star.setToolTip('Remove from Prompts' if saved else 'Save to Prompts')
             bubble.header.addWidget(star)
